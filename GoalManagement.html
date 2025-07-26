@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Today's Appointments</title>
+  <style>
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #fff;
+      color: #202124;
+    }
+    
+    .dialog-header {
+      margin-bottom: 20px;
+    }
+    
+    .dialog-title {
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      color: #1a73e8;
+    }
+    
+    .dialog-subtitle {
+      font-size: 14px;
+      color: #5f6368;
+      margin: 0 0 16px 0;
+    }
+    
+    .date-display {
+      background-color: #f8f9fa;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    .appointments-container {
+      max-height: 350px;
+      overflow-y: auto;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      background: #fff;
+    }
+    
+    .appointment-item {
+      padding: 16px;
+      border-bottom: 1px solid #f1f3f4;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      position: relative;
+    }
+    
+    .appointment-item:last-child {
+      border-bottom: none;
+    }
+    
+    .appointment-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .appointment-item.documented {
+      background-color: #e8f5e8;
+      border-left: 4px solid #34a853;
+    }
+    
+    .appointment-item.in-progress {
+      background-color: #fff3e0;
+      border-left: 4px solid #ff9800;
+    }
+    
+    .appointment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    
+    .appointment-time {
+      font-weight: 500;
+      color: #1a73e8;
+      font-size: 16px;
+    }
+    
+    .appointment-status {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    
+    .status-not-started {
+      background-color: #f1f3f4;
+      color: #5f6368;
+    }
+    
+    .status-in-progress {
+      background-color: #fff3e0;
+      color: #e8710a;
+    }
+    
+    .status-documented {
+      background-color: #e8f5e8;
+      color: #137333;
+    }
+    
+    .appointment-client {
+      margin-bottom: 4px;
+    }
+    
+    .client-name {
+      font-weight: 500;
+      color: #202124;
+      margin-right: 8px;
+    }
+    
+    .client-id {
+      font-size: 12px;
+      color: #5f6368;
+      background-color: #f1f3f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .client-match-status {
+      font-size: 12px;
+      margin-left: 8px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .match-high {
+      background-color: #e8f5e8;
+      color: #137333;
+    }
+    
+    .match-medium {
+      background-color: #fff3e0;
+      color: #e8710a;
+    }
+    
+    .match-low, .match-none {
+      background-color: #fce8e6;
+      color: #d93025;
+    }
+    
+    .appointment-details {
+      font-size: 14px;
+      color: #5f6368;
+      margin-bottom: 8px;
+    }
+    
+    .appointment-title {
+      font-style: italic;
+      margin-bottom: 4px;
+    }
+    
+    .appointment-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+    }
+    
+    .btn-primary {
+      background-color: #1a73e8;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #1557b0;
+    }
+    
+    .btn-secondary {
+      background-color: #f1f3f4;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #e8eaed;
+    }
+    
+    .btn-success {
+      background-color: #34a853;
+      color: white;
+    }
+    
+    .no-appointments {
+      padding: 40px 20px;
+      text-align: center;
+      color: #5f6368;
+    }
+    
+    .no-appointments-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    
+    .dialog-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .left-info {
+      font-size: 14px;
+      color: #5f6368;
+    }
+    
+    .right-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .refresh-btn {
+      background-color: #f1f3f4;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    
+    .refresh-btn:hover {
+      background-color: #e8eaed;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #5f6368;
+    }
+    
+    .error {
+      background-color: #fce8e6;
+      color: #d93025;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: #5f6368;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dialog-header">
+    <h1 class="dialog-title">Today's Appointments</h1>
+    <p class="dialog-subtitle">Select an appointment to document the therapy session</p>
+  </div>
+  
+  <div class="date-display" id="date-display">
+    Loading date...
+  </div>
+  
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #f1f3f4;"></div>
+      <span>Not Started</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #fff3e0;"></div>
+      <span>In Progress</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #e8f5e8;"></div>
+      <span>Documented</span>
+    </div>
+  </div>
+  
+  <div id="error-container"></div>
+  
+  <div id="appointments-container" class="appointments-container">
+    <div class="loading">Loading today's appointments...</div>
+  </div>
+  
+  <div class="dialog-actions">
+    <div class="left-info">
+      <span id="appointment-count">-</span>
+    </div>
+    <div class="right-actions">
+      <button type="button" class="refresh-btn" onclick="refreshAppointments()">
+        🔄 Refresh
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="showManualSelection()">
+        Manual Selection
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="closeDialog()">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let appointments = [];
+    
+    // Initialize dialog
+    document.addEventListener('DOMContentLoaded', function() {
+      updateDateDisplay();
+      loadTodaysAppointments();
+    });
+    
+    function updateDateDisplay() {
+      const today = new Date();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      document.getElementById('date-display').textContent = today.toLocaleDateString('en-US', options);
+    }
+    
+    function loadTodaysAppointments() {
+      google.script.run
+        .withSuccessHandler(handleAppointmentsLoaded)
+        .withFailureHandler(handleError)
+        .getTodaysAppointmentsForDialog();
+    }
+    
+    function refreshAppointments() {
+      document.getElementById('appointments-container').innerHTML = '<div class="loading">Refreshing appointments...</div>';
+      loadTodaysAppointments();
+    }
+    
+    function handleAppointmentsLoaded(appointmentData) {
+      appointments = appointmentData || [];
+      renderAppointments(appointments);
+      updateAppointmentCount();
+    }
+    
+    function renderAppointments(appointmentList) {
+      const container = document.getElementById('appointments-container');
+      
+      if (!appointmentList || appointmentList.length === 0) {
+        container.innerHTML = `
+          <div class="no-appointments">
+            <div class="no-appointments-icon">📅</div>
+            <div>No therapy appointments found for today</div>
+            <div style="margin-top: 8px; font-size: 12px;">Check your calendar or use manual selection</div>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = appointmentList.map(appointment => `
+        <div class="appointment-item ${appointment.documentationStatus}" onclick="selectAppointment('${appointment.id}')">
+          <div class="appointment-header">
+            <div class="appointment-time">${escapeHtml(appointment.timeDisplay)}</div>
+            <div class="appointment-status status-${appointment.documentationStatus}">
+              ${formatStatus(appointment.documentationStatus)}
+            </div>
+          </div>
+          
+          <div class="appointment-client">
+            ${appointment.hasClientMatch ? `
+              <span class="client-name">${escapeHtml(appointment.matchedClient.name)}</span>
+              <span class="client-id">${escapeHtml(appointment.matchedClient.id)}</span>
+              <span class="client-match-status match-${appointment.matchConfidence}">
+                ${formatMatchConfidence(appointment.matchConfidence)} match
+              </span>
+            ` : `
+              <span class="client-name">${escapeHtml(appointment.extractedClientName || 'Unknown Client')}</span>
+              <span class="client-match-status match-none">No client match</span>
+            `}
+          </div>
+          
+          <div class="appointment-details">
+            <div class="appointment-title">${escapeHtml(appointment.title)}</div>
+            <div>Duration: ${appointment.duration} minutes</div>
+            ${appointment.location ? `<div>Location: ${escapeHtml(appointment.location)}</div>` : ''}
+          </div>
+          
+          <div class="appointment-actions">
+            ${appointment.documentationStatus === 'documented' ? `
+              <button class="btn btn-success" onclick="event.stopPropagation(); viewDocumentation('${appointment.id}')">
+                ✓ View Documentation
+              </button>
+            ` : appointment.hasClientMatch ? `
+              <button class="btn btn-primary" onclick="event.stopPropagation(); documentSession('${appointment.id}')">
+                📝 Document Session
+              </button>
+            ` : `
+              <button class="btn btn-secondary" onclick="event.stopPropagation(); manualClientMatch('${appointment.id}')">
+                🔗 Link Client
+              </button>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function selectAppointment(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) return;
+      
+      if (appointment.documentationStatus === 'documented') {
+        viewDocumentation(appointmentId);
+      } else if (appointment.hasClientMatch) {
+        documentSession(appointmentId);
+      } else {
+        manualClientMatch(appointmentId);
+      }
+    }
+    
+    function documentSession(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment || !appointment.hasClientMatch) {
+        showError('Cannot document session: client not matched');
+        return;
+      }
+      
+      // Show goal selector for this client
+      google.script.run
+        .withSuccessHandler(closeDialog)
+        .withFailureHandler(handleError)
+        .showGoalSelectorForAppointment(appointment);
+    }
+    
+    function manualClientMatch(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) return;
+      
+      // Show client selector to manually match
+      google.script.run
+        .withSuccessHandler(closeDialog)
+        .withFailureHandler(handleError)
+        .showClientSelectorForAppointment(appointment);
+    }
+    
+    function viewDocumentation(appointmentId) {
+      google.script.run
+        .withSuccessHandler(handleDocumentationUrl)
+        .withFailureHandler(handleError)
+        .getDocumentationForAppointment(appointmentId);
+    }
+    
+    function handleDocumentationUrl(url) {
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        showError('Documentation URL not found');
+      }
+    }
+    
+    function showManualSelection() {
+      google.script.run
+        .withSuccessHandler(closeDialog)
+        .withFailureHandler(handleError)
+        .showClientSelector();
+    }
+    
+    function updateAppointmentCount() {
+      const total = appointments.length;
+      const documented = appointments.filter(a => a.documentationStatus === 'documented').length;
+      const remaining = total - documented;
+      
+      const countText = `${documented}/${total} documented${remaining > 0 ? `, ${remaining} remaining` : ''}`;
+      document.getElementById('appointment-count').textContent = countText;
+    }
+    
+    function formatStatus(status) {
+      switch (status) {
+        case 'documented': return 'Documented';
+        case 'in_progress': return 'In Progress';
+        default: return 'Not Started';
+      }
+    }
+    
+    function formatMatchConfidence(confidence) {
+      switch (confidence) {
+        case 'high': return 'High';
+        case 'medium': return 'Medium';
+        case 'low': return 'Low';
+        default: return 'No';
+      }
+    }
+    
+    function closeDialog() {
+      google.script.host.close();
+    }
+    
+    function handleError(error) {
+      console.error('Dialog error:', error);
+      showError(error.message || 'An unexpected error occurred');
+    }
+    
+    function showError(message) {
+      const container = document.getElementById('error-container');
+      container.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

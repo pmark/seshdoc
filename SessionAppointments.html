@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Appointments</title>
+  <style>
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #fff;
+      color: #202124;
+    }
+    
+    .dialog-header {
+      margin-bottom: 20px;
+    }
+    
+    .dialog-title {
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      color: #1a73e8;
+    }
+    
+    .dialog-subtitle {
+      font-size: 14px;
+      color: #5f6368;
+      margin: 0 0 16px 0;
+    }
+    
+    .date-selection-section {
+      background-color: #f8f9fa;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .date-input {
+      padding: 8px 12px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 14px;
+      outline: none;
+      min-width: 140px;
+    }
+    
+    .date-input:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 1px #1a73e8;
+    }
+    
+    .date-btn {
+      padding: 8px 12px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      background-color: #fff;
+      color: #3c4043;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    
+    .date-btn:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .date-btn.active {
+      background-color: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+    
+    .quick-dates {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .quick-date-btn {
+      padding: 6px 12px;
+      border: 1px solid #dadce0;
+      border-radius: 16px;
+      background-color: #fff;
+      color: #5f6368;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    
+    .quick-date-btn:hover {
+      background-color: #e8f0fe;
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
+    
+    .quick-date-btn.selected {
+      background-color: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+    
+    .date-display {
+      background-color: #fff;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .date-nav {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .nav-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #dadce0;
+      border-radius: 50%;
+      background-color: #fff;
+      color: #5f6368;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    
+    .nav-btn:hover {
+      background-color: #f8f9fa;
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
+    
+    .appointments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .appointments-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+    }
+    
+    .view-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .view-filter {
+      padding: 4px 8px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      background-color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    .view-filter.active {
+      background-color: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+    
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: #5f6368;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+    
+    .appointments-container {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      background: #fff;
+    }
+    
+    .appointment-item {
+      padding: 16px;
+      border-bottom: 1px solid #f1f3f4;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      position: relative;
+    }
+    
+    .appointment-item:last-child {
+      border-bottom: none;
+    }
+    
+    .appointment-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .appointment-item.documented {
+      background-color: #e8f5e8;
+      border-left: 4px solid #34a853;
+    }
+    
+    .appointment-item.in-progress {
+      background-color: #fff3e0;
+      border-left: 4px solid #ff9800;
+    }
+    
+    .appointment-item.no-client-match {
+      background-color: #fce8e6;
+      border-left: 4px solid #ea4335;
+    }
+    
+    .appointment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    
+    .appointment-time {
+      font-weight: 500;
+      color: #1a73e8;
+      font-size: 16px;
+    }
+    
+    .appointment-duration {
+      font-size: 12px;
+      color: #5f6368;
+      margin-left: 8px;
+    }
+    
+    .appointment-status {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    
+    .status-not-started {
+      background-color: #f1f3f4;
+      color: #5f6368;
+    }
+    
+    .status-in-progress {
+      background-color: #fff3e0;
+      color: #e8710a;
+    }
+    
+    .status-documented {
+      background-color: #e8f5e8;
+      color: #137333;
+    }
+    
+    .appointment-client {
+      margin-bottom: 4px;
+    }
+    
+    .client-name {
+      font-weight: 500;
+      color: #202124;
+      margin-right: 8px;
+    }
+    
+    .client-id {
+      font-size: 12px;
+      color: #5f6368;
+      background-color: #f1f3f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .client-match-status {
+      font-size: 12px;
+      margin-left: 8px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .match-high {
+      background-color: #e8f5e8;
+      color: #137333;
+    }
+    
+    .match-medium {
+      background-color: #fff3e0;
+      color: #e8710a;
+    }
+    
+    .match-low, .match-none {
+      background-color: #fce8e6;
+      color: #d93025;
+    }
+    
+    .appointment-details {
+      font-size: 14px;
+      color: #5f6368;
+      margin-bottom: 8px;
+    }
+    
+    .appointment-title {
+      font-style: italic;
+      margin-bottom: 4px;
+    }
+    
+    .appointment-location {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+    
+    .location-icon {
+      font-size: 12px;
+    }
+    
+    .appointment-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+    }
+    
+    .btn-primary {
+      background-color: #1a73e8;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #1557b0;
+    }
+    
+    .btn-secondary {
+      background-color: #f1f3f4;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #e8eaed;
+    }
+    
+    .btn-success {
+      background-color: #34a853;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: #2d7a3f;
+    }
+    
+    .btn-warning {
+      background-color: #ff9800;
+      color: white;
+    }
+    
+    .btn-warning:hover {
+      background-color: #e8710a;
+    }
+    
+    .no-appointments {
+      padding: 40px 20px;
+      text-align: center;
+      color: #5f6368;
+    }
+    
+    .no-appointments-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    
+    .empty-state-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    
+    .dialog-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .left-info {
+      font-size: 14px;
+      color: #5f6368;
+    }
+    
+    .appointment-count {
+      font-weight: 500;
+      color: #1a73e8;
+    }
+    
+    .right-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-btn {
+      background-color: #f1f3f4;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    
+    .action-btn:hover {
+      background-color: #e8eaed;
+    }
+    
+    .action-btn.primary {
+      background-color: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+    
+    .action-btn.primary:hover {
+      background-color: #1557b0;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #5f6368;
+    }
+    
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #f1f3f4;
+      border-top: 3px solid #1a73e8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error {
+      background-color: #fce8e6;
+      color: #d93025;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    
+    .weekend-notice {
+      background-color: #fff3e0;
+      color: #e8710a;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="dialog-header">
+    <h1 class="dialog-title">Session Appointments</h1>
+    <p class="dialog-subtitle">Select a date and appointment to document a therapy session</p>
+  </div>
+  
+  <div class="date-selection-section">
+    <div class="date-controls">
+      <input type="date" id="selected-date" class="date-input">
+      <button type="button" class="date-btn" onclick="goToToday()" id="today-btn">Today</button>
+    </div>
+    
+    <div class="quick-dates">
+      <button type="button" class="quick-date-btn" onclick="selectRelativeDate(-1)">Yesterday</button>
+      <button type="button" class="quick-date-btn" onclick="selectRelativeDate(0)" id="today-quick">Today</button>
+      <button type="button" class="quick-date-btn" onclick="selectRelativeDate(1)">Tomorrow</button>
+      <button type="button" class="quick-date-btn" onclick="selectRelativeDate(7)">Next Week</button>
+    </div>
+  </div>
+  
+  <div class="date-display" id="date-display">
+    <div>
+      <span id="display-date">Loading...</span>
+      <span id="weekend-indicator" style="display: none; color: #ff9800; font-size: 12px; margin-left: 8px;">(Weekend)</span>
+    </div>
+    <div class="date-nav">
+      <button type="button" class="nav-btn" onclick="navigateDate(-1)" title="Previous Day">‹</button>
+      <button type="button" class="nav-btn" onclick="navigateDate(1)" title="Next Day">›</button>
+    </div>
+  </div>
+  
+  <div class="appointments-header">
+    <div class="appointments-title">Appointments</div>
+    <div class="view-controls">
+      <button type="button" class="view-filter active" onclick="filterAppointments('all')" data-filter="all">All</button>
+      <button type="button" class="view-filter" onclick="filterAppointments('pending')" data-filter="pending">Pending</button>
+      <button type="button" class="view-filter" onclick="filterAppointments('documented')" data-filter="documented">Documented</button>
+      <button type="button" class="action-btn" onclick="refreshAppointments()">🔄</button>
+    </div>
+  </div>
+  
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #f1f3f4;"></div>
+      <span>Not Started</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #fff3e0;"></div>
+      <span>In Progress</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #e8f5e8;"></div>
+      <span>Documented</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #fce8e6;"></div>
+      <span>No Client Match</span>
+    </div>
+  </div>
+  
+  <div id="error-container"></div>
+  <div id="weekend-notice"></div>
+  
+  <div id="appointments-container" class="appointments-container">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <div>Loading appointments...</div>
+    </div>
+  </div>
+  
+  <div class="dialog-actions">
+    <div class="left-info">
+      <span id="appointment-summary">-</span>
+    </div>
+    <div class="right-actions">
+      <button type="button" class="action-btn" onclick="showManualSelection()">
+        ➕ Manual Entry
+      </button>
+      <button type="button" class="action-btn" onclick="showGoalManagement()">
+        🎯 Manage Goals
+      </button>
+      <button type="button" class="action-btn" onclick="closeDialog()">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let appointments = [];
+    let selectedDate = new Date();
+    let currentFilter = 'all';
+    
+    // Initialize dialog
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeDateControls();
+      loadAppointmentsForDate();
+    });
+    
+    function initializeDateControls() {
+      const dateInput = document.getElementById('selected-date');
+      const today = new Date();
+      
+      // Set initial date to today
+      selectedDate = today;
+      dateInput.value = formatDateForInput(today);
+      
+      // Highlight today button
+      updateTodayButton();
+      updateDateDisplay();
+      
+      // Event listeners
+      dateInput.addEventListener('change', function() {
+        selectedDate = new Date(this.value + 'T12:00:00');
+        updateDateDisplay();
+        loadAppointmentsForDate();
+        updateQuickDateButtons();
+      });
+    }
+    
+    function formatDateForInput(date) {
+      return date.toISOString().split('T')[0];
+    }
+    
+    function updateDateDisplay() {
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      
+      document.getElementById('display-date').textContent = selectedDate.toLocaleDateString('en-US', options);
+      
+      // Show weekend indicator
+      const isWeekend = selectedDate.getDay() === 0 || selectedDate.getDay() === 6;
+      const weekendIndicator = document.getElementById('weekend-indicator');
+      weekendIndicator.style.display = isWeekend ? 'inline' : 'none';
+      
+      // Show weekend notice if needed
+      if (isWeekend && appointments.length === 0) {
+        showWeekendNotice();
+      } else {
+        hideWeekendNotice();
+      }
+    }
+    
+    function updateTodayButton() {
+      const todayBtn = document.getElementById('today-btn');
+      const todayQuick = document.getElementById('today-quick');
+      const isToday = isDateToday(selectedDate);
+      
+      todayBtn.classList.toggle('active', isToday);
+      if (todayQuick) {
+        todayQuick.classList.toggle('selected', isToday);
+      }
+    }
+    
+    function updateQuickDateButtons() {
+      const quickBtns = document.querySelectorAll('.quick-date-btn');
+      quickBtns.forEach(btn => btn.classList.remove('selected'));
+      
+      const today = new Date();
+      const dayDiff = Math.floor((selectedDate - today) / (1000 * 60 * 60 * 24));
+      
+      if (dayDiff === -1 && quickBtns[0]) quickBtns[0].classList.add('selected');
+      if (dayDiff === 0 && quickBtns[1]) quickBtns[1].classList.add('selected');
+      if (dayDiff === 1 && quickBtns[2]) quickBtns[2].classList.add('selected');
+      if (dayDiff === 7 && quickBtns[3]) quickBtns[3].classList.add('selected');
+    }
+    
+    function isDateToday(date) {
+      const today = new Date();
+      return date.toDateString() === today.toDateString();
+    }
+    
+    function goToToday() {
+      selectedDate = new Date();
+      document.getElementById('selected-date').value = formatDateForInput(selectedDate);
+      updateDateDisplay();
+      updateTodayButton();
+      updateQuickDateButtons();
+      loadAppointmentsForDate();
+    }
+    
+    function selectRelativeDate(days) {
+      const newDate = new Date();
+      newDate.setDate(newDate.getDate() + days);
+      
+      selectedDate = newDate;
+      document.getElementById('selected-date').value = formatDateForInput(newDate);
+      updateDateDisplay();
+      updateTodayButton();
+      updateQuickDateButtons();
+      loadAppointmentsForDate();
+    }
+    
+    function navigateDate(direction) {
+      const newDate = new Date(selectedDate);
+      newDate.setDate(newDate.getDate() + direction);
+      
+      selectedDate = newDate;
+      document.getElementById('selected-date').value = formatDateForInput(newDate);
+      updateDateDisplay();
+      updateTodayButton();
+      updateQuickDateButtons();
+      loadAppointmentsForDate();
+    }
+    
+    function refreshAppointments() {
+      loadAppointmentsForDate();
+    }
+    
+    function loadAppointmentsForDate() {
+      showLoading();
+      
+      google.script.run
+        .withSuccessHandler(handleAppointmentsLoaded)
+        .withFailureHandler(handleError)
+        .getAppointmentsForDateDialog(selectedDate);
+    }
+    
+    function showLoading() {
+      const container = document.getElementById('appointments-container');
+      container.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <div>Loading appointments...</div>
+        </div>
+      `;
+    }
+    
+    function handleAppointmentsLoaded(appointmentData) {
+      appointments = appointmentData || [];
+      renderAppointments(appointments);
+      updateAppointmentSummary();
+      hideWeekendNotice();
+    }
+    
+    function renderAppointments(appointmentList) {
+      const container = document.getElementById('appointments-container');
+      
+      const filteredAppointments = filterAppointmentsByStatus(appointmentList, currentFilter);
+      
+      if (!filteredAppointments || filteredAppointments.length === 0) {
+        container.innerHTML = `
+          <div class="no-appointments">
+            <div class="no-appointments-icon">📅</div>
+            <div>${getEmptyStateMessage()}</div>
+            <div class="empty-state-actions">
+              ${currentFilter !== 'all' ? '<button type="button" class="btn btn-secondary" onclick="filterAppointments(\'all\')">Show All Appointments</button>' : ''}
+              <button type="button" class="btn btn-primary" onclick="showManualSelection()">Add Manual Entry</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = filteredAppointments.map(appointment => `
+        <div class="appointment-item ${getAppointmentClass(appointment)}" onclick="selectAppointment('${appointment.id}')">
+          <div class="appointment-header">
+            <div>
+              <span class="appointment-time">${escapeHtml(appointment.timeDisplay)}</span>
+              <span class="appointment-duration">${appointment.duration} min</span>
+            </div>
+            <div class="appointment-status status-${appointment.documentationStatus}">
+              ${formatStatus(appointment.documentationStatus)}
+            </div>
+          </div>
+          
+          <div class="appointment-client">
+            ${appointment.hasClientMatch ? `
+              <span class="client-name">${escapeHtml(appointment.matchedClient.name)}</span>
+              <span class="client-id">${escapeHtml(appointment.matchedClient.id)}</span>
+              <span class="client-match-status match-${appointment.matchConfidence}">
+                ${formatMatchConfidence(appointment.matchConfidence)} match
+              </span>
+            ` : `
+              <span class="client-name">${escapeHtml(appointment.extractedClientName || 'Unknown Client')}</span>
+              <span class="client-match-status match-none">No client match</span>
+            `}
+          </div>
+          
+          <div class="appointment-details">
+            <div class="appointment-title">${escapeHtml(appointment.title)}</div>
+            ${appointment.location ? `
+              <div class="appointment-location">
+                <span class="location-icon">${getLocationIcon(appointment.location)}</span>
+                <span>${escapeHtml(appointment.location)}</span>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div class="appointment-actions">
+            ${getAppointmentActions(appointment)}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getAppointmentClass(appointment) {
+      if (appointment.documentationStatus === 'documented') return 'documented';
+      if (appointment.documentationStatus === 'in_progress') return 'in-progress';
+      if (!appointment.hasClientMatch) return 'no-client-match';
+      return '';
+    }
+    
+    function getAppointmentActions(appointment) {
+      if (appointment.documentationStatus === 'documented') {
+        return `
+          <button class="btn btn-success" onclick="event.stopPropagation(); viewDocumentation('${appointment.id}')">
+            ✓ View Documentation
+          </button>
+          <button class="btn btn-secondary" onclick="event.stopPropagation(); editDocumentation('${appointment.id}')">
+            ✏️ Edit
+          </button>
+        `;
+      } else if (appointment.hasClientMatch) {
+        return `
+          <button class="btn btn-primary" onclick="event.stopPropagation(); documentSession('${appointment.id}')">
+            📝 Document Session
+          </button>
+          ${appointment.documentationStatus === 'in_progress' ? `
+            <button class="btn btn-warning" onclick="event.stopPropagation(); continueSession('${appointment.id}')">
+              ⏸️ Continue
+            </button>
+          ` : ''}
+        `;
+      } else {
+        return `
+          <button class="btn btn-secondary" onclick="event.stopPropagation(); manualClientMatch('${appointment.id}')">
+            🔗 Link Client
+          </button>
+        `;
+      }
+    }
+    
+    function getEmptyStateMessage() {
+      const selectedDateStr = selectedDate.toLocaleDateString();
+      const isToday = isDateToday(selectedDate);
+      const isWeekend = selectedDate.getDay() === 0 || selectedDate.getDay() === 6;
+      
+      if (isToday) {
+        return 'No therapy appointments found for today';
+      } else if (isWeekend) {
+        return `No appointments found for ${selectedDateStr} (Weekend)`;
+      } else {
+        return `No therapy appointments found for ${selectedDateStr}`;
+      }
+    }
+    
+    function filterAppointmentsByStatus(appointments, filter) {
+      switch (filter) {
+        case 'pending':
+          return appointments.filter(apt => apt.documentationStatus !== 'documented');
+        case 'documented':
+          return appointments.filter(apt => apt.documentationStatus === 'documented');
+        case 'all':
+        default:
+          return appointments;
+      }
+    }
+    
+    function filterAppointments(filterType) {
+      currentFilter = filterType;
+      
+      document.querySelectorAll('.view-filter').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filterType);
+      });
+      
+      renderAppointments(appointments);
+      updateAppointmentSummary();
+    }
+    
+    function selectAppointment(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) return;
+      
+      if (appointment.documentationStatus === 'documented') {
+        viewDocumentation(appointmentId);
+      } else if (appointment.hasClientMatch) {
+        documentSession(appointmentId);
+      } else {
+        manualClientMatch(appointmentId);
+      }
+    }
+    
+    function documentSession(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment || !appointment.hasClientMatch) {
+        showError('Cannot document session: client not matched');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(closeDialog)
+        .withFailureHandler(handleError)
+        .showGoalSelectorForAppointment(appointment);
+    }
+    
+    function manualClientMatch(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) return;
+      
+      google.script.run
+        .withSuccessHandler(closeDialog)
+        .withFailureHandler(handleError)
+        .showClientSelectorForAppointment(appointment);
+    }
+    
+    function viewDocumentation(appointmentId) {
+      google.script.run
+        .withSuccessHandler(handleDocumentationUrl)
+        .withFailureHandler(handleError)
+        .getDocumentationForAppointment(appointmentId);
+    }
+    
+    function editDocumentation(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) return;
+      
+      if (confirm('This will open the form for editing. Any changes will update the original response. Continue?')) {
+        viewDocumentation(appointmentId);
+      }
+    }
+    
+    function continueSession(appointmentId) {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) return;
+      
+      google.script.run
+        .withSuccessHandler(handleDocumentationUrl)
+        .withFailureHandler(handleError)
+        .continueSessionDocumentation(appointmentId);
+    }
+    
+    function handleDocumentationUrl(url) {
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        showError('Documentation URL not found');
+      }
+    }
+    
+    function showManualSelection() {
+      google.script.run
+        .withSuccessHandler(closeDialog)
+        .withFailureHandler(handleError)
+        .showClientSelector();
+    }
+    
+    function showGoalManagement() {
+      google.script.run
+        .withSuccessHandler(closeDialog)
+        .withFailureHandler(handleError)
+        .showGoalManagement();
+    }
+    
+    function updateAppointmentSummary() {
+      const filteredAppointments = filterAppointmentsByStatus(appointments, currentFilter);
+      const total = appointments.length;
+      const documented = appointments.filter(a => a.documentationStatus === 'documented').length;
+      const pending = total - documented;
+      const showing = filteredAppointments.length;
+      
+      let summaryText = '';
+      
+      if (currentFilter === 'all') {
+        summaryText = `${documented}/${total} documented`;
+        if (pending > 0) {
+          summaryText += `, ${pending} pending`;
+        }
+      } else {
+        summaryText = `${showing} ${currentFilter} appointments`;
+      }
+      
+      document.getElementById('appointment-summary').innerHTML = `<span class="appointment-count">${summaryText}</span>`;
+    }
+    
+    function showWeekendNotice() {
+      const notice = document.getElementById('weekend-notice');
+      notice.innerHTML = `
+        <div class="weekend-notice">
+          📅 This is a weekend day. Most therapy appointments are typically scheduled on weekdays.
+        </div>
+      `;
+    }
+    
+    function hideWeekendNotice() {
+      document.getElementById('weekend-notice').innerHTML = '';
+    }
+    
+    function formatStatus(status) {
+      switch (status) {
+        case 'documented': return 'Documented';
+        case 'in_progress': return 'In Progress';
+        default: return 'Not Started';
+      }
+    }
+    
+    function formatMatchConfidence(confidence) {
+      switch (confidence) {
+        case 'high': return 'High';
+        case 'medium': return 'Medium';
+        case 'low': return 'Low';
+        default: return 'No';
+      }
+    }
+    
+    function getLocationIcon(location) {
+      if (!location) return '📍';
+      
+      const locationLower = location.toLowerCase();
+      
+      if (locationLower.includes('zoom') || locationLower.includes('video') || locationLower.includes('telehealth')) {
+        return '💻';
+      }
+      
+      if (locationLower.includes('phone') || locationLower.includes('call')) {
+        return '📞';
+      }
+      
+      return '📍';
+    }
+    
+    function closeDialog() {
+      google.script.host.close();
+    }
+    
+    function handleError(error) {
+      console.error('Dialog error:', error);
+      showError(error.message || 'An unexpected error occurred');
+    }
+    
+    function showError(message) {
+      const container = document.getElementById('error-container');
+      container.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+      setTimeout(() => container.innerHTML = '', 8000);
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
