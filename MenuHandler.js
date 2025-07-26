@@ -8,17 +8,17 @@
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('Therapy Tools')
-    .addItem('📋 Document Sessions', 'showSessionAppointments')
-    .addItem('✏️ Document Session (Manual)', 'showClientSelector')
+  ui.createMenu("Therapy Tools")
+    .addItem("📋 Document Sessions", "showSessionAppointments")
+    .addItem("✏️ Document Session (Manual)", "showClientSelector")
     .addSeparator()
-    .addItem('🎯 Manage Client Goals', 'showGoalManagement')
+    .addItem("🎯 Manage Client Goals", "showGoalManagement")
     .addSeparator()
-    .addItem('🔧 Setup Form Configuration', 'showFormConfiguration')
-    .addItem('🔑 Authorize All Permissions', 'authorizeAllPermissions')
-    .addItem('🔍 Test Calendar Access', 'testCalendarAccess')
+    .addItem("🔧 Setup Form Configuration", "showFormConfiguration")
+    .addItem("🔑 Authorize All Permissions", "authorizeAllPermissions")
+    .addItem("🔍 Test Calendar Access", "testCalendarAccess")
     .addSeparator()
-    .addItem('🔄 Sync Form Responses', 'syncFormResponses')
+    .addItem("🔄 Sync Form Responses", "syncFormResponses")
     .addToUi();
 }
 
@@ -26,24 +26,27 @@ function onOpen() {
  * Shows session appointments with date selection (primary workflow)
  */
 function showSessionAppointments() {
-  const html = HtmlService.createHtmlOutputFromFile('SessionAppointments')
+  const html = HtmlService.createHtmlOutputFromFile("SessionAppointments")
     .setWidth(700)
     .setHeight(600)
-    .setTitle('Session Appointments');
-  
-  SpreadsheetApp.getUi().showModalDialog(html, 'Document Sessions');
+    .setTitle("Session Appointments");
+
+  SpreadsheetApp.getUi().showModalDialog(html, "Document Sessions");
 }
 
 /**
  * Shows the client selector dialog (manual workflow)
  */
 function showClientSelector() {
-  const html = HtmlService.createHtmlOutputFromFile('ClientSelector')
+  const html = HtmlService.createHtmlOutputFromFile("ClientSelector")
     .setWidth(400)
     .setHeight(500)
-    .setTitle('Select Client');
-  
-  SpreadsheetApp.getUi().showModalDialog(html, 'Document Session - Manual Selection');
+    .setTitle("Select Client");
+
+  SpreadsheetApp.getUi().showModalDialog(
+    html,
+    "Document Session - Manual Selection"
+  );
 }
 
 /**
@@ -51,15 +54,19 @@ function showClientSelector() {
  * @param {Object} sessionData - Session data with client and optional appointment
  */
 function showGoalSelector(sessionData) {
-  const template = HtmlService.createTemplateFromFile('GoalSelector');
+  const template = HtmlService.createTemplateFromFile("GoalSelector");
   template.sessionData = JSON.stringify(sessionData);
-  
-  const html = template.evaluate()
+
+  const html = template
+    .evaluate()
     .setWidth(450)
     .setHeight(400)
-    .setTitle('Select Goal');
-  
-  SpreadsheetApp.getUi().showModalDialog(html, 'Document Session - Select Goal');
+    .setTitle("Select Goal");
+
+  SpreadsheetApp.getUi().showModalDialog(
+    html,
+    "Document Session - Select Goal"
+  );
 }
 
 /**
@@ -67,24 +74,40 @@ function showGoalSelector(sessionData) {
  */
 function showGoalManagement() {
   // First show client selector for goal management
-  const html = HtmlService.createHtmlOutputFromFile('GoalManagementClientSelector')
+  const html = HtmlService.createHtmlOutputFromFile(
+    "GoalManagementClientSelector"
+  )
     .setWidth(400)
     .setHeight(450)
-    .setTitle('Select Client for Goal Management');
-  
-  SpreadsheetApp.getUi().showModalDialog(html, 'Manage Client Goals');
+    .setTitle("Select Client for Goal Management");
+
+  SpreadsheetApp.getUi().showModalDialog(html, "Manage Client Goals");
+}
+function showGoalManagementInterface(selectedClient) {
+  const template = HtmlService.createTemplateFromFile(
+    "GoalManagementInterface"
+  );
+  template.client = JSON.stringify(selectedClient);
+
+  const html = template
+    .evaluate()
+    .setWidth(600)
+    .setHeight(500)
+    .setTitle("Manage Goals - " + selectedClient.name);
+
+  SpreadsheetApp.getUi().showModalDialog(html, "Goal Management");
 }
 
 /**
  * Shows form configuration dialog
  */
 function showFormConfiguration() {
-  const html = HtmlService.createHtmlOutputFromFile('FormConfiguration')
+  const html = HtmlService.createHtmlOutputFromFile("FormConfiguration")
     .setWidth(500)
     .setHeight(400)
-    .setTitle('Form Configuration');
-  
-  SpreadsheetApp.getUi().showModalDialog(html, 'Setup Google Form Integration');
+    .setTitle("Form Configuration");
+
+  SpreadsheetApp.getUi().showModalDialog(html, "Setup Google Form Integration");
 }
 
 /**
@@ -93,21 +116,36 @@ function showFormConfiguration() {
 function testCalendarAccess() {
   try {
     const results = testAllCalendarMethods();
-    
-    let message = 'Calendar Access Test Results:\n\n';
-    message += `✓ Default Calendar: ${results.defaultCalendar ? 'Working' : 'Failed'}\n`;
-    message += `✓ Primary Calendar: ${results.primaryCalendar ? 'Working' : 'Failed'}\n`;
-    message += `✓ All Calendars: ${results.allCalendars ? 'Working' : 'Failed'}\n`;
-    message += `✓ Calendar API: ${results.calendarAPI ? 'Working' : 'Not Enabled'}\n`;
-    
+
+    let message = "Calendar Access Test Results:\n\n";
+    message += `✓ Default Calendar: ${
+      results.defaultCalendar ? "Working" : "Failed"
+    }\n`;
+    message += `✓ Primary Calendar: ${
+      results.primaryCalendar ? "Working" : "Failed"
+    }\n`;
+    message += `✓ All Calendars: ${
+      results.allCalendars ? "Working" : "Failed"
+    }\n`;
+    message += `✓ Calendar API: ${
+      results.calendarAPI ? "Working" : "Not Enabled"
+    }\n`;
+
     if (results.errors.length > 0) {
-      message += '\nErrors:\n' + results.errors.join('\n');
+      message += "\nErrors:\n" + results.errors.join("\n");
     }
-    
-    SpreadsheetApp.getUi().alert('Calendar Test Results', message, SpreadsheetApp.getUi().ButtonSet.OK);
-    
+
+    SpreadsheetApp.getUi().alert(
+      "Calendar Test Results",
+      message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
   } catch (error) {
-    SpreadsheetApp.getUi().alert('Test Failed', 'Calendar test failed: ' + error.message, SpreadsheetApp.getUi().ButtonSet.OK);
+    SpreadsheetApp.getUi().alert(
+      "Test Failed",
+      "Calendar test failed: " + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
   }
 }
 
@@ -119,8 +157,9 @@ function generateSessionForm(sessionData) {
   try {
     // Use the correct function name instead of class method
     const formUrl = createEnhancedPrePopulatedUrl(sessionData);
-    
-    const html = HtmlService.createHtmlOutput(`
+
+    const html = HtmlService.createHtmlOutput(
+      `
       <div style="padding: 20px; font-family: Arial, sans-serif;">
         <h3>Session Form Ready</h3>
         <p><strong>Client:</strong> ${sessionData.client.name}</p>
@@ -145,20 +184,24 @@ function generateSessionForm(sessionData) {
           cursor: pointer;
         ">Close</button>
       </div>
-    `)
-    .setWidth(400)
-    .setHeight(250)
-    .setTitle('Session Form Generated');
-    
-    SpreadsheetApp.getUi().showModalDialog(html, 'Ready to Document');
-    
+    `
+    )
+      .setWidth(400)
+      .setHeight(250)
+      .setTitle("Session Form Generated");
+
+    SpreadsheetApp.getUi().showModalDialog(html, "Ready to Document");
+
     // Record the session if we have appointment data
     if (sessionData.appointmentId) {
       recordSessionStart(sessionData);
     }
-    
   } catch (error) {
-    SpreadsheetApp.getUi().alert('Error', 'Failed to generate form: ' + error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+    SpreadsheetApp.getUi().alert(
+      "Error",
+      "Failed to generate form: " + error.toString(),
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
   }
 }
 
@@ -169,11 +212,11 @@ function generateSessionForm(sessionData) {
 function recordSessionStart(sessionData) {
   try {
     // Record session with tracking service if available
-    if (typeof recordSession !== 'undefined') {
+    if (typeof recordSession !== "undefined") {
       recordSession(sessionData);
     }
   } catch (error) {
-    console.error('Error recording session:', error);
+    console.error("Error recording session:", error);
     // Don't block the main flow if tracking fails
   }
 }
@@ -184,14 +227,19 @@ function recordSessionStart(sessionData) {
 function syncFormResponses() {
   try {
     const config = getFormConfig();
-    
-    if (!config.FORM_ID || config.FORM_ID === 'YOUR_GOOGLE_FORM_ID_HERE') {
-      SpreadsheetApp.getUi().alert('Configuration Required', 'Please configure your Google Form ID first.', SpreadsheetApp.getUi().ButtonSet.OK);
+
+    if (!config.FORM_ID || config.FORM_ID === "YOUR_GOOGLE_FORM_ID_HERE") {
+      SpreadsheetApp.getUi().alert(
+        "Configuration Required",
+        "Please configure your Google Form ID first.",
+        SpreadsheetApp.getUi().ButtonSet.OK
+      );
       return;
     }
-    
+
     // Show progress dialog
-    const html = HtmlService.createHtmlOutput(`
+    const html = HtmlService.createHtmlOutput(
+      `
       <div style="padding: 20px; font-family: Arial, sans-serif; text-align: center;">
         <h3>Syncing Form Responses</h3>
         <p>Please wait while we sync recent form responses with client data...</p>
@@ -209,23 +257,31 @@ function syncFormResponses() {
           }
         </style>
       </div>
-    `)
-    .setWidth(400)
-    .setHeight(200)
-    .setTitle('Syncing Data');
-    
-    SpreadsheetApp.getUi().showModalDialog(html, 'Sync in Progress');
-    
+    `
+    )
+      .setWidth(400)
+      .setHeight(200)
+      .setTitle("Syncing Data");
+
+    SpreadsheetApp.getUi().showModalDialog(html, "Sync in Progress");
+
     // Perform the sync
     let syncCount = 0;
-    if (typeof syncExistingResponses !== 'undefined') {
+    if (typeof syncExistingResponses !== "undefined") {
       syncCount = syncExistingResponses(config.FORM_ID, 7); // Last 7 days
     }
-    
+
     // Show completion message
-    SpreadsheetApp.getUi().alert('Sync Complete', `Successfully synced ${syncCount} form responses.`, SpreadsheetApp.getUi().ButtonSet.OK);
-    
+    SpreadsheetApp.getUi().alert(
+      "Sync Complete",
+      `Successfully synced ${syncCount} form responses.`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
   } catch (error) {
-    SpreadsheetApp.getUi().alert('Sync Error', 'Failed to sync form responses: ' + error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+    SpreadsheetApp.getUi().alert(
+      "Sync Error",
+      "Failed to sync form responses: " + error.toString(),
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
   }
 }

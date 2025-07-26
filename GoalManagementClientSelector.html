@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Select Client for Goal Management</title>
+    <style>
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #fff;
+        color: #202124;
+      }
+
+      .dialog-header {
+        margin-bottom: 20px;
+      }
+
+      .dialog-title {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 0 0 8px 0;
+        color: #1a73e8;
+      }
+
+      .dialog-subtitle {
+        font-size: 14px;
+        color: #5f6368;
+        margin: 0 0 16px 0;
+      }
+
+      .info-banner {
+        background-color: #e8f0fe;
+        border: 1px solid #4285f4;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .info-icon {
+        color: #1a73e8;
+        font-size: 16px;
+      }
+
+      .info-text {
+        font-size: 14px;
+        color: #1a73e8;
+      }
+
+      .search-container {
+        margin-bottom: 16px;
+        position: relative;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 12px 16px 12px 40px;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+      }
+
+      .search-input:focus {
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 1px #1a73e8;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #5f6368;
+        font-size: 16px;
+      }
+
+      .client-list {
+        max-height: 280px;
+        overflow-y: auto;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .client-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f3f4;
+        transition: background-color 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .client-item:last-child {
+        border-bottom: none;
+      }
+
+      .client-item:hover {
+        background-color: #f8f9fa;
+      }
+
+      .client-item.selected {
+        background-color: #e8f0fe;
+        border-color: #1a73e8;
+      }
+
+      .client-info {
+        flex: 1;
+      }
+
+      .client-name {
+        font-weight: 500;
+        color: #202124;
+        margin-bottom: 2px;
+      }
+
+      .client-id {
+        font-size: 12px;
+        color: #5f6368;
+        margin-bottom: 4px;
+      }
+
+      .client-goals-preview {
+        font-size: 12px;
+        color: #5f6368;
+        font-style: italic;
+      }
+
+      .goals-count {
+        background-color: #f1f3f4;
+        color: #5f6368;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .goals-count.has-goals {
+        background-color: #e8f5e8;
+        color: #137333;
+      }
+
+      .no-results {
+        padding: 24px;
+        text-align: center;
+        color: #5f6368;
+        font-style: italic;
+      }
+
+      .no-results-icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+        opacity: 0.5;
+      }
+
+      .dialog-actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .selection-info {
+        font-size: 14px;
+        color: #5f6368;
+      }
+
+      .right-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        outline: none;
+      }
+
+      .btn-primary {
+        background-color: #1a73e8;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #1557b0;
+      }
+
+      .btn-primary:disabled {
+        background-color: #dadce0;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background-color: #f1f3f4;
+        color: #3c4043;
+        border: 1px solid #dadce0;
+      }
+
+      .btn-secondary:hover {
+        background-color: #e8eaed;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #5f6368;
+      }
+
+      .loading-spinner {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #f1f3f4;
+        border-top: 2px solid #1a73e8;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 12px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error {
+        background-color: #fce8e6;
+        color: #d93025;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+        font-size: 14px;
+      }
+
+      .client-stats {
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .stat-chip {
+        background-color: #f8f9fa;
+        color: #5f6368;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        border: 1px solid #e8eaed;
+      }
+
+      .stat-chip.active {
+        background-color: #e8f5e8;
+        color: #137333;
+        border-color: #34a853;
+      }
+
+      .stat-chip.completed {
+        background-color: #fff3e0;
+        color: #e8710a;
+        border-color: #ff9800;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dialog-header">
+      <h1 class="dialog-title">🎯 Manage Client Goals</h1>
+      <p class="dialog-subtitle">
+        Select a client to view and manage their therapy goals
+      </p>
+    </div>
+
+    <div class="info-banner">
+      <div class="info-icon">💡</div>
+      <div class="info-text">
+        You can add, edit, remove, and mark goals as completed for the selected
+        client.
+      </div>
+    </div>
+
+    <div id="error-container"></div>
+
+    <div class="search-container">
+      <div class="search-icon">🔍</div>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder="Search clients by name or ID..."
+        autocomplete="off"
+      />
+    </div>
+
+    <div id="client-list" class="client-list">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading clients...</div>
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <div class="selection-info">
+        <span id="client-count">-</span>
+      </div>
+      <div class="right-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeDialog()">
+          Cancel
+        </button>
+        <button
+          type="button"
+          id="manage-goals-btn"
+          class="btn btn-primary"
+          disabled
+          onclick="proceedToGoalManagement()"
+        >
+          Manage Goals
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let clients = [];
+      let selectedClient = null;
+      let allClients = [];
+
+      // Initialize dialog
+      document.addEventListener("DOMContentLoaded", function () {
+        loadClients();
+        setupEventListeners();
+      });
+
+      function setupEventListeners() {
+        const searchInput = document.getElementById("search-input");
+
+        // Search functionality
+        searchInput.addEventListener("input", handleSearch);
+
+        // Keyboard shortcuts
+        searchInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && selectedClient) {
+            proceedToGoalManagement();
+          } else if (e.key === "Escape") {
+            closeDialog();
+          }
+        });
+
+        // Focus search input
+        searchInput.focus();
+      }
+
+      function loadClients() {
+        google.script.run
+          .withSuccessHandler(handleClientsLoaded)
+          .withFailureHandler(handleError)
+          .loadClientsForDialog();
+      }
+
+      function handleClientsLoaded(clientData) {
+        allClients = clientData || [];
+        clients = allClients;
+
+        // Enhance clients with goal information
+        enhanceClientsWithGoalData(clients);
+
+        renderClientList(clients);
+        updateClientCount();
+      }
+
+      function enhanceClientsWithGoalData(clientList) {
+        clientList.forEach((client) => {
+          // Parse goals from pipe-delimited string
+          const goalsText = client.Goals || "";
+          const goals = goalsText
+            ? goalsText.split("|").filter((g) => g.trim())
+            : [];
+
+          client.goalCount = goals.length;
+          client.goalsPreview =
+            goals.length > 0
+              ? goals.slice(0, 2).join(", ") + (goals.length > 2 ? "..." : "")
+              : "No goals set";
+
+          // Get completed goals count (if GoalManagementService is available)
+          client.completedGoalCount = 0; // This would be enhanced with actual data
+        });
+      }
+
+      function handleSearch(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+
+        if (searchTerm === "") {
+          clients = allClients;
+        } else {
+          clients = allClients.filter(
+            (client) =>
+              client.name.toLowerCase().includes(searchTerm) ||
+              client.id.toLowerCase().includes(searchTerm) ||
+              (client.Goals || "").toLowerCase().includes(searchTerm)
+          );
+        }
+
+        renderClientList(clients);
+        updateClientCount();
+
+        // Clear selection if selected client is no longer in filtered results
+        if (
+          selectedClient &&
+          !clients.some((c) => c.id === selectedClient.id)
+        ) {
+          selectedClient = null;
+          document.getElementById("manage-goals-btn").disabled = true;
+        }
+      }
+
+      function renderClientList(clientList) {
+        const container = document.getElementById("client-list");
+
+        if (!clientList || clientList.length === 0) {
+          container.innerHTML = `
+          <div class="no-results">
+            <div class="no-results-icon">🎯</div>
+            <div>No clients found</div>
+            <div style="font-size: 12px; margin-top: 4px;">Try adjusting your search terms</div>
+          </div>
+        `;
+          return;
+        }
+
+        container.innerHTML = clientList
+          .map(
+            (client) => `
+        <div class="client-item" onclick="selectClientItem('${escapeHtml(
+          client.id
+        )}')">
+          <div class="client-info">
+            <div class="client-name">${escapeHtml(client.name)}</div>
+            <div class="client-id">ID: ${escapeHtml(client.id)}</div>
+            <div class="client-goals-preview">${escapeHtml(
+              client.goalsPreview
+            )}</div>
+            <div class="client-stats">
+              <div class="stat-chip ${client.goalCount > 0 ? "active" : ""}">
+                ${client.goalCount} ${client.goalCount === 1 ? "goal" : "goals"}
+              </div>
+              ${
+                client.completedGoalCount > 0
+                  ? `
+                <div class="stat-chip completed">
+                  ${client.completedGoalCount} completed
+                </div>
+              `
+                  : ""
+              }
+            </div>
+          </div>
+          <div class="goals-count ${client.goalCount > 0 ? "has-goals" : ""}">
+            ${client.goalCount}
+          </div>
+        </div>
+      `
+          )
+          .join("");
+      }
+
+      function selectClientItem(clientId) {
+        // Remove previous selection
+        document.querySelectorAll(".client-item").forEach((item) => {
+          item.classList.remove("selected");
+        });
+
+        // Find and select the clicked item
+        const clickedItem = event.currentTarget;
+        clickedItem.classList.add("selected");
+
+        // Find the client data
+        selectedClient = clients.find((client) => client.id === clientId);
+
+        // Enable manage goals button
+        document.getElementById("manage-goals-btn").disabled = false;
+      }
+
+      function proceedToGoalManagement() {
+        if (!selectedClient) {
+          showError("Please select a client first");
+          return;
+        }
+
+        // Disable button to prevent double-clicks
+        const btn = document.getElementById("manage-goals-btn");
+        btn.disabled = true;
+        btn.textContent = "Loading...";
+
+        // Call server-side function to show goal management interface
+        google.script.run
+          .withSuccessHandler(closeDialog)
+          .withFailureHandler(handleProceedError)
+          .showGoalManagementInterface(selectedClient);
+      }
+
+      function handleProceedError(error) {
+        const btn = document.getElementById("manage-goals-btn");
+        btn.disabled = false;
+        btn.textContent = "Manage Goals";
+        handleError(error);
+      }
+
+      function updateClientCount() {
+        const total = allClients.length;
+        const showing = clients.length;
+        const withGoals = clients.filter((c) => c.goalCount > 0).length;
+
+        let countText = "";
+        if (showing === total) {
+          countText = `${total} clients total`;
+          if (withGoals > 0) {
+            countText += `, ${withGoals} with goals`;
+          }
+        } else {
+          countText = `Showing ${showing} of ${total} clients`;
+          if (withGoals > 0) {
+            countText += `, ${withGoals} with goals`;
+          }
+        }
+
+        document.getElementById("client-count").textContent = countText;
+      }
+
+      function closeDialog() {
+        google.script.host.close();
+      }
+
+      function handleError(error) {
+        console.error("Dialog error:", error);
+        showError(error.message || "An unexpected error occurred");
+      }
+
+      function showError(message) {
+        const container = document.getElementById("error-container");
+        container.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+        setTimeout(() => (container.innerHTML = ""), 8000);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>
